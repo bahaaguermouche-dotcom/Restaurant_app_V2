@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil | RestaurantApp{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profil-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8 text-center text-md-start">
+                <img src="https://i.pravatar.cc/150?u={{ user.email }}" alt="Photo de profil" class="profil-img">
+                <h1 class="display-6 fw-bold mb-2">{{ user.nom }}</h1>
+                <p class="member-since mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Membre depuis {{ user.date_inscription.strftime('%d/%m/%Y') }}
+                </p>
+            </div>
+            <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                <div class="btn-group">
+                    <a href="{{ url_for('commande') }}" class="btn btn-light">
+                        <i class="fas fa-box me-2"></i>Mes Commandes
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Informations Personnelles -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Informations Personnelles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-primary">
+                                <i class="fas fa-user me-2"></i>Nom complet
+                            </label>
+                            <p class="form-control-plaintext">{{ user.nom }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-primary">
+                                <i class="fas fa-envelope me-2"></i>Adresse email
+                            </label>
+                            <p class="form-control-plaintext">{{ user.email }}</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold text-primary">
+                                <i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison
+                            </label>
+                            <p class="form-control-plaintext">{{ user.adresse }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-primary">
+                                <i class="fas fa-id-card me-2"></i>ID Utilisateur
+                            </label>
+                            <p class="form-control-plaintext">#{{ user.id }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-primary">
+                                <i class="fas fa-calendar me-2"></i>Date d'inscription
+                            </label>
+                            <p class="form-control-plaintext">{{ user.date_inscription.strftime('%d/%m/%Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Mes Statistiques
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="stats-card">
+                                <span class="stat-number">{{ user.commandes|length }}</span>
+                                <span class="stat-label">Commandes passées</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stats-card">
+                                <span class="stat-number">{{ user.panier_items|length }}</span>
+                                <span class="stat-label">Articles en panier</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stats-card">
+                                <span class="stat-number">
+                                    {% set total_depense = user.commandes|sum(attribute='total') %}
+                                    {{ "%.0f"|format(total_depense) }} DA
+                                </span>
+                                <span class="stat-label">Total dépensé</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Rapides -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Actions Rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('plats') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-utensils me-2"></i>Voir le Menu
+                        </a>
+                        <a href="{{ url_for('panier') }}" class="btn btn-outline-success">
+                            <i class="fas fa-shopping-cart me-2"></i>Mon Panier
+                        </a>
+                        <a href="{{ url_for('commande') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-history me-2"></i>Historique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières Commandes -->
+    {% if user.commandes %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Dernières Commandes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Commande</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Statut</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for commande in user.commandes[:5] %}
+                                <tr>
+                                    <td>#{{ commande.id }}</td>
+                                    <td>{{ commande.date_commande.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td class="fw-bold text-success">{{ commande.total }} DA</td>
+                                    <td>
+                                        <span class="badge statut-{{ commande.statut.replace(' ', '-').replace('é', 'e') }}">
+                                            {{ commande.statut }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('commande') }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

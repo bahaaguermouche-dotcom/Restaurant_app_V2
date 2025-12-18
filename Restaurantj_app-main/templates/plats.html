@@ -1,0 +1,512 @@
+{% extends 'base.html' %}
+
+{% block title %}Plats | RestaurantApp{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold text-primary mb-3">🍽️ Notre Menu</h1>
+            <p class="lead text-muted">Découvrez nos délicieux plats préparés avec passion</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Categories Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Catégories</h5>
+                    <!-- زر البحث -->
+                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#searchBar">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <!-- شريط البحث (مخفي افتراضياً) -->
+                <div class="collapse" id="searchBar">
+                    <div class="card-body border-bottom">
+                        <div class="input-group input-group-sm">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un plat...">
+                            <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- زر المفضلة -->
+                    {% if current_user.is_authenticated %}
+                    <div class="mb-3">
+                        <button id="favoritesFilter" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+                                onclick="toggleFavoritesFilter()">
+                            <i class="fas fa-heart me-2"></i>
+                            <span id="favoritesText">Mes Favoris</span>
+                            <span class="badge bg-danger ms-2" id="favoritesCount">{{ current_user.favoris|length }}</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action active category-filter" data-category="all">
+                            <i class="fas fa-utensils me-2"></i>Tous les plats
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action category-filter" data-category="Entrées">
+                            <i class="fas fa-leaf me-2"></i>Entrées
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action category-filter" data-category="Plats principaux">
+                            <i class="fas fa-utensil-spoon me-2"></i>Plats principaux
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action category-filter" data-category="Desserts">
+                            <i class="fas fa-ice-cream me-2"></i>Desserts
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action category-filter" data-category="Boissons">
+                            <i class="fas fa-glass-whiskey me-2"></i>Boissons
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plats Grid -->
+        <div class="col-lg-9">
+            <!-- معلومات التصفية -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div id="filterInfo" class="alert alert-info d-none">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span id="filterText"></span>
+                        <button class="btn btn-sm btn-outline-info ms-2" onclick="showAllPlats()">
+                            Tout afficher
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شبكة الأطباق -->
+            <div class="row justify-content-center" id="platsGrid">
+                {% for plat in plats %}
+                <div class="col-xl-4 col-lg-6 col-md-6 mb-4 plat-item" 
+                     data-category="{{ plat.categorie }}" 
+                     data-name="{{ plat.nom|lower }}"
+                     data-id="{{ plat.id }}"
+                     {% if current_user.is_authenticated %}
+                        {% for fav in current_user.favoris %}
+                            {% if fav.plat_id == plat.id %}
+                                data-favorite="true"
+                            {% endif %}
+                        {% endfor %}
+                     {% endif %}>
+                    
+                    <div class="card plat-card h-100 mx-auto position-relative" style="max-width: 300px;">
+                        <!-- زر المفضلة -->
+                        {% if current_user.is_authenticated %}
+                        <div class="position-absolute top-0 end-0 m-2">
+                            {% set is_favorite = false %}
+                            {% for fav in current_user.favoris %}
+                                {% if fav.plat_id == plat.id %}
+                                    {% set is_favorite = true %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if is_favorite %}
+                                <a href="{{ url_for('supprimer_favori', plat_id=plat.id) }}" 
+                                   class="btn btn-danger btn-sm rounded-circle favorite-btn"
+                                   title="Retirer des favoris"
+                                   onclick="toggleFavorite(event, ( plat.id ) , true)">
+                                    <i class="fas fa-heart"></i>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('ajouter_favori', plat_id=plat.id) }}" 
+                                   class="btn btn-outline-danger btn-sm rounded-circle favorite-btn"
+                                   title="Ajouter aux favoris"
+                                   onclick="toggleFavorite(event, ( plat.id ), false)">
+                                    <i class="far fa-heart"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <img src="{{ plat.image }}" class="card-img-top" alt="{{ plat.nom }}" 
+                             style="height: 200px; object-fit: cover;">
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-center">{{ plat.nom }}</h5>
+                            <p class="text-muted mb-2 text-center">
+                                <i class="fas fa-tag me-1"></i>{{ plat.categorie }}
+                            </p>
+                            
+                            <div class="mt-auto">
+                                <div class="text-center mb-3">
+                                    <span class="price display-6 fw-bold text-primary">
+                                        {{ "%.0f"|format(plat.prix) }} DA
+                                    </span>
+                                </div>
+                                
+                                {% if current_user.is_authenticated %}
+                                <form method="POST" action="{{ url_for('ajouter_au_panier', plat_id=plat.id) }}">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-6">
+                                            <label for="quantite-{{ plat.id }}" class="form-label small mb-1">
+                                                Quantité:
+                                            </label>
+                                            <input type="number" id="quantite-{{ plat.id }}" name="quantite" 
+                                                   value="1" min="1" max="10" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-6">
+                                            <button type="submit" class="btn btn-primary w-100 add-to-cart">
+                                                <i class="fas fa-cart-plus me-1"></i>Ajoute
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                                {% else %}
+                                <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Connectez-vous
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- رسالة عدم وجود نتائج -->
+            <div id="noResults" class="text-center d-none">
+                <div class="empty-state py-5">
+                    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucun plat trouvé</h4>
+                    <p class="text-muted">Essayez avec d'autres termes de recherche</p>
+                    <button class="btn btn-primary" onclick="showAllPlats()">
+                        Voir tous les plats
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript للبحث والتصفية -->
+<script>
+// متغيرات التصفية
+let currentFilter = 'all';
+let currentSearch = '';
+let showFavoritesOnly = false;
+let userFavorites = [];
+
+// تهيئة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة event listeners للتصفية حسب الفئة
+    document.querySelectorAll('.category-filter').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const category = this.getAttribute('data-category');
+            filterByCategory(category);
+        });
+    });
+    
+    // إضافة event listener للبحث
+    document.getElementById('searchInput').addEventListener('input', function() {
+        filterPlatsBySearch(this.value);
+    });
+    
+    // تحميل المفضلات إذا كان المستخدم مسجل الدخول
+    if (document.getElementById('favoritesFilter')) {
+        loadUserFavorites();
+    }
+    
+    // تأثيرات الظهور الأولية
+    animatePlats();
+});
+
+// تحميل المفضلات
+function loadUserFavorites() {
+    // تحديث class للأطباق المفضلة
+    document.querySelectorAll('.plat-item').forEach(item => {
+        if (item.getAttribute('data-favorite') === 'true') {
+            item.classList.add('favorite');
+        }
+    });
+}
+
+// تبديل فلتر المفضلة
+function toggleFavoritesFilter() {
+    showFavoritesOnly = !showFavoritesOnly;
+    const favoritesBtn = document.getElementById('favoritesFilter');
+    const favoritesText = document.getElementById('favoritesText');
+    const favoritesCount = document.getElementById('favoritesCount');
+    
+    if (showFavoritesOnly) {
+        favoritesBtn.classList.remove('btn-outline-danger');
+        favoritesBtn.classList.add('btn-danger');
+        favoritesText.textContent = 'Tous les plats';
+        currentFilter = 'all';
+        currentSearch = '';
+        document.getElementById('searchInput').value = '';
+        
+        // تحديث القائمة النشطة
+        document.querySelectorAll('.category-filter').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-category') === 'all') {
+                item.classList.add('active');
+            }
+        });
+    } else {
+        favoritesBtn.classList.remove('btn-danger');
+        favoritesBtn.classList.add('btn-outline-danger');
+        favoritesText.textContent = 'Mes Favoris';
+    }
+    
+    updateFilterDisplay();
+    filterPlats();
+}
+
+// التصفية حسب الفئة
+function filterByCategory(category) {
+    showFavoritesOnly = false;
+    resetFavoritesButton();
+    
+    currentFilter = category;
+    currentSearch = '';
+    document.getElementById('searchInput').value = '';
+    updateFilterDisplay();
+    filterPlats();
+    
+    // تحديث القائمة النشطة
+    document.querySelectorAll('.category-filter').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-category') === category) {
+            item.classList.add('active');
+        }
+    });
+}
+
+// إعادة تعيين زر المفضلة
+function resetFavoritesButton() {
+    showFavoritesOnly = false;
+    const favoritesBtn = document.getElementById('favoritesFilter');
+    const favoritesText = document.getElementById('favoritesText');
+    
+    if (favoritesBtn) {
+        favoritesBtn.classList.remove('btn-danger');
+        favoritesBtn.classList.add('btn-outline-danger');
+        favoritesText.textContent = 'Mes Favoris';
+    }
+}
+
+// التصفية حسب البحث
+function filterPlatsBySearch(searchTerm) {
+    showFavoritesOnly = false;
+    resetFavoritesButton();
+    
+    currentSearch = searchTerm.toLowerCase();
+    currentFilter = 'all';
+    updateFilterDisplay();
+    filterPlats();
+    
+    // تحديث القائمة النشطة
+    document.querySelectorAll('.category-filter').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-category') === 'all') {
+            item.classList.add('active');
+        }
+    });
+}
+
+// تطبيق التصفية
+function filterPlats() {
+    const platItems = document.querySelectorAll('.plat-item');
+    let visibleCount = 0;
+    
+    platItems.forEach(item => {
+        const category = item.dataset.category;
+        const name = item.dataset.name;
+        const platId = parseInt(item.dataset.id);
+        const isFavorite = item.classList.contains('favorite');
+        
+        const matchesCategory = currentFilter === 'all' || category === currentFilter;
+        const matchesSearch = currentSearch === '' || name.includes(currentSearch);
+        const matchesFavorites = !showFavoritesOnly || isFavorite;
+        
+        if (matchesCategory && matchesSearch && matchesFavorites) {
+            item.style.display = 'block';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // إظهار أو إخفاء رسالة عدم وجود نتائج
+    const noResults = document.getElementById('noResults');
+    if (visibleCount === 0) {
+        noResults.classList.remove('d-none');
+    } else {
+        noResults.classList.add('d-none');
+    }
+    
+    // تحسين التخطيط بعد التصفية
+    setTimeout(() => {
+        optimizeLayout();
+        animatePlats();
+    }, 50);
+}
+
+// تحسين التخطيط
+function optimizeLayout() {
+    const visibleItems = Array.from(document.querySelectorAll('.plat-item')).filter(item => 
+        item.style.display !== 'none'
+    );
+    
+    const count = visibleItems.length;
+    
+    // إعادة تعيين جميع العناصر أولاً
+    visibleItems.forEach(item => {
+        item.className = 'col-xl-4 col-lg-6 col-md-6 mb-4 plat-item';
+    });
+    
+    // تطبيق التخطيط المناسب حسب العدد
+    if (count === 1) {
+        // طبق واحد - عرض في المنتصف
+        visibleItems[0].classList.add('offset-xl-4', 'offset-lg-3');
+        visibleItems[0].classList.remove('col-lg-6');
+        visibleItems[0].classList.add('col-lg-6');
+    } else if (count === 2) {
+        // طبقين - عرض في المنتصف
+        visibleItems[0].classList.add('offset-lg-1');
+        visibleItems[0].classList.remove('col-lg-6');
+        visibleItems[0].classList.add('col-lg-5');
+        visibleItems[1].classList.remove('col-lg-6');
+        visibleItems[1].classList.add('col-lg-5');
+    }
+    // 3 أطباق أو أكثر - التخطيط العادي
+}
+
+// عرض جميع الأطباق
+function showAllPlats() {
+    currentFilter = 'all';
+    currentSearch = '';
+    showFavoritesOnly = false;
+    document.getElementById('searchInput').value = '';
+    resetFavoritesButton();
+    updateFilterDisplay();
+    filterPlats();
+    
+    // تحديث القائمة النشطة
+    document.querySelectorAll('.category-filter').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-category') === 'all') {
+            item.classList.add('active');
+        }
+    });
+}
+
+// تحديث عرض معلومات التصفية
+function updateFilterDisplay() {
+    const filterInfo = document.getElementById('filterInfo');
+    const filterText = document.getElementById('filterText');
+    
+    if (showFavoritesOnly) {
+        filterText.textContent = 'Affichage : Mes plats favoris';
+        filterInfo.classList.remove('d-none');
+    } else if (currentSearch) {
+        filterText.textContent = `Résultats pour : "${currentSearch}"`;
+        filterInfo.classList.remove('d-none');
+    } else if (currentFilter !== 'all') {
+        filterText.textContent = `Catégorie : ${currentFilter}`;
+        filterInfo.classList.remove('d-none');
+    } else {
+        filterInfo.classList.add('d-none');
+    }
+}
+
+// مسح البحث
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    showAllPlats();
+}
+
+// تأثيرات الظهور
+function animatePlats() {
+    const platItems = document.querySelectorAll('.plat-item');
+    platItems.forEach((item, index) => {
+        if (item.style.display !== 'none') {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(30px)';
+            setTimeout(() => {
+                item.style.transition = 'all 0.6s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 100);
+        }
+    });
+}
+
+// تبديل المفضلة
+function toggleFavorite(event, platId, isCurrentlyFavorite) {
+    event.preventDefault();
+    
+    const url = isCurrentlyFavorite ? 
+        `/supprimer-favori/${platId}` : 
+        `/ajouter-favori/${platId}`;
+    
+    // تحديث الواجهة أولاً
+    const favoriteBtn = event.target.closest('.favorite-btn');
+    const platItem = event.target.closest('.plat-item');
+    
+    if (isCurrentlyFavorite) {
+        // إزالة من المفضلة
+        favoriteBtn.classList.remove('btn-danger');
+        favoriteBtn.classList.add('btn-outline-danger');
+        favoriteBtn.innerHTML = '<i class="far fa-heart"></i>';
+        favoriteBtn.title = 'Ajouter aux favoris';
+        favoriteBtn.href = `/ajouter-favori/${platId}`;
+        platItem.classList.remove('favorite');
+        platItem.removeAttribute('data-favorite');
+        
+        // تحديث العداد
+        updateFavoritesCount(-1);
+    } else {
+        // إضافة للمفضلة
+        favoriteBtn.classList.remove('btn-outline-danger');
+        favoriteBtn.classList.add('btn-danger');
+        favoriteBtn.innerHTML = '<i class="fas fa-heart"></i>';
+        favoriteBtn.title = 'Retirer des favoris';
+        favoriteBtn.href = `/supprimer-favori/${platId}`;
+        platItem.classList.add('favorite');
+        platItem.setAttribute('data-favorite', 'true');
+        
+        // تحديث العداد
+        updateFavoritesCount(1);
+    }
+    
+    // إرسال الطلب إلى الخادم
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Favorite updated successfully');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating favorite:', error);
+            // التراجع عن التغيير في حالة الخطأ
+            toggleFavorite(event, platId, !isCurrentlyFavorite);
+        });
+}
+
+// تحديث عداد المفضلة
+function updateFavoritesCount(change) {
+    const favoritesCount = document.getElementById('favoritesCount');
+    if (favoritesCount) {
+        let currentCount = parseInt(favoritesCount.textContent);
+        currentCount += change;
+        favoritesCount.textContent = currentCount;
+    }
+}
+
+
+</script>
+{% endblock %}

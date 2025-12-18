@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil | RestaurantApp{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-80">
+            <div class="col-lg-6">
+                <h1 class="display-3 fw-bold mb-4">
+                    Bienvenue chez <span class="text-warning">RestaurantApp</span>
+                </h1>
+                <p class="lead mb-4">
+                    Découvrez une expérience culinaire exceptionnelle. 
+                    Commandez vos plats préférés et faites-vous livrer en un clin d'œil.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('plats') }}" class="btn btn-warning btn-lg px-4 py-3">
+                        <i class="fas fa-utensils me-2"></i>Voir le Menu
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                        <i class="fas fa-user-plus me-2"></i>Créer un Compte
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Stats Rapides -->
+                <div class="row mt-5 pt-4">
+                    <div class="col-4 text-center">
+                        <h3 class="fw-bold text-warning">50+</h3>
+                        <p class="mb-0 small">Plats Délicieux</p>
+                    </div>
+                    <div class="col-4 text-center">
+                        <h3 class="fw-bold text-warning">1000+</h3>
+                        <p class="mb-0 small">Clients Satisfaits</p>
+                    </div>
+                    <div class="col-4 text-center">
+                        <h3 class="fw-bold text-warning">30min</h3>
+                        <p class="mb-0 small">Livraison Moyenne</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80" 
+                     alt="Restaurant Food" class="img-fluid rounded-3 shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Caractéristiques -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold text-primary mb-3">Pourquoi Nous Choisir ?</h2>
+                <p class="lead text-muted">Une expérience de commande exceptionnelle</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-shipping-fast fa-3x text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold">Livraison Rapide</h4>
+                        <p class="text-muted">Livraison en moins de 45 minutes dans toute la ville</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-utensils fa-3x text-success"></i>
+                        </div>
+                        <h4 class="fw-bold">Plats Frais</h4>
+                        <p class="text-muted">Ingrédients frais préparés quotidiennement par nos chefs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-medal fa-3x text-warning"></i>
+                        </div>
+                        <h4 class="fw-bold">Qualité Garantie</h4>
+                        <p class="text-muted">Satisfaction garantie ou remboursé sous 24h</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Plats Populaires -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-fire text-warning me-2"></i>Plats Populaires
+                </h2>
+                <p class="lead text-muted">Découvrez nos plats les plus appréciés</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for plat in plats_populaires %}
+            <div class="col-xl-4 col-lg-6">
+                <div class="card plat-card h-100 shadow-sm">
+                    <div class="position-relative">
+                        <img src="{{ plat.image }}" class="card-img-top" alt="{{ plat.nom }}" 
+                             style="height: 250px; object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>Populaire
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold">{{ plat.nom }}</h5>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-tag me-1"></i>{{ plat.categorie }}
+                        </p>
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="price h4 fw-bold text-primary">
+                                    {{ format_price(plat.prix) }} DA
+                                </span>
+                                <div class="rating">
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                </div>
+                            </div>
+                            
+                            {% if current_user.is_authenticated %}
+                            <form method="POST" action="{{ url_for('ajouter_au_panier', plat_id=plat.id) }}">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-6">
+                                        <input type="number" name="quantite" value="1" min="1" max="10" 
+                                               class="form-control form-control-sm">
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-cart-plus me-1"></i>Commander
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-sign-in-alt me-1"></i>Connectez-vous
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('plats') }}" class="btn btn-outline-primary btn-lg">
+                Voir Tout le Menu <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Section Nouveautés -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-bell text-success me-2"></i>Nouveautés
+                </h2>
+                <p class="lead text-muted">Découvrez nos dernières créations</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for plat in plats_nouveaux %}
+            <div class="col-lg-4">
+                <div class="card nouveaute-card h-100 border-0 shadow">
+                    <div class="position-relative">
+                        <img src="{{ plat.image }}" class="card-img-top" alt="{{ plat.nom }}" 
+                             style="height: 200px; object-fit: cover;">
+                        <div class="position-absolute top-0 start-0 m-3">
+                            <span class="badge bg-success">
+                                <i class="fas fa-newspaper me-1"></i>Nouveau
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">{{ plat.nom }}</h5>
+                        <p class="text-muted">{{ plat.categorie }}</p>
+                        <span class="h5 fw-bold text-primary">{{ format_price(plat.prix) }} DA</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Section Appel à l'Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="display-6 fw-bold mb-3">Prêt à commander ?</h2>
+                <p class="lead mb-0">Rejoignez des milliers de clients satisfaits et commandez dès maintenant !</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('plats') }}" class="btn btn-warning btn-lg px-5">
+                    <i class="fas fa-shopping-cart me-2"></i>Commander Maintenant
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Témoignages -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-comments text-info me-2"></i>Ce Que Disent Nos Clients
+                </h2>
+                <p class="lead text-muted">Découvrez les expériences de nos clients satisfaits</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card testimonial-card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="rating mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="card-text mb-3">
+                            "Service exceptionnel et plats délicieux ! La livraison était rapide et la nourriture encore chaude."
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <img src="https://i.pravatar.cc/60?img=1" alt="Client" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="fw-bold mb-0">Sarah M.</h6>
+                                <small class="text-muted">Client depuis 2023</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card testimonial-card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="rating mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="card-text mb-3">
+                            "Je commande régulièrement et je n'ai jamais été déçu. La qualité est toujours au rendez-vous !"
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <img src="https://i.pravatar.cc/60?img=2" alt="Client" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="fw-bold mb-0">Karim B.</h6>
+                                <small class="text-muted">Client depuis 2022</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card testimonial-card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="rating mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star-half-alt text-warning"></i>
+                        </div>
+                        <p class="card-text mb-3">
+                            "Application facile à utiliser et choix varié. Parfait pour les dîners en famille !"
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <img src="https://i.pravatar.cc/60?img=3" alt="Client" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="fw-bold mb-0">Leila K.</h6>
+                                <small class="text-muted">Client depuis 2024</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Ajouter un Plat | RestaurantApp{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>🍽️ Ajouter un Nouveau Plat</h2>
+    
+    <form method="POST" action="{{ url_for('ajouter_plat') }}" class="plat-form">
+        <div class="form-group">
+            <label for="nom">Nom du plat:</label>
+            <input type="text" id="nom" name="nom" required class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="prix">Prix (DA):</label>
+            <input type="number" id="prix" name="prix" step="0.01" required class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="categorie">Catégorie:</label>
+            <select id="categorie" name="categorie" required class="form-input">
+                <option value="">Choisir une catégorie</option>
+                <option value="Entrées">🥗 Entrées</option>
+                <option value="Plats principaux">🍝 Plats principaux</option>
+                <option value="Desserts">🍰 Desserts</option>
+                <option value="Boissons">🥤 Boissons</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="image">URL de l'image:</label>
+            <input type="url" id="image" name="image" required class="form-input" 
+                   placeholder="https://example.com/image.jpg">
+        </div>
+
+        <button type="submit" class="btn submit-btn">➕ Ajouter le Plat</button>
+    </form>
+</div>
+{% endblock %}
